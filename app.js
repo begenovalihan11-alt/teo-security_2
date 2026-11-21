@@ -113,11 +113,10 @@ let startedAt = 0;
 
 function gateView() {
   const [status, title, note] = gateStates[phase];
-  $('gate-state').lastElementChild.textContent = navigator.onLine ? status : 'Нет сети';
-  $('open').disabled = !navigator.onLine || state.cars.length === 0 || phase !== 'closed';
+  $('gate-state').lastElementChild.textContent = status;
+  $('open').disabled = state.cars.length === 0 || phase !== 'closed';
   $('action-label').textContent = title;
-  $('action-note').textContent = !navigator.onLine ? 'Открытие недоступно без интернета'
-    : !state.cars.length ? 'Добавьте автомобиль в профиле' : note;
+  $('action-note').textContent = !state.cars.length ? 'Добавьте автомобиль в профиле' : note;
 }
 function setLift(fraction) {
   // Both camera views use the hinge coordinates in the original photograph.
@@ -136,7 +135,7 @@ function animateGate(timestamp) {
   const elapsed = Math.max(0, timestamp - startedAt);
   if (phase === 'opening' && elapsed >= travelMs) {
     state = read();
-    if (!navigator.onLine || !state.cars.length) { endCycle(); return; }
+    if (!state.cars.length) { endCycle(); return; }
     phase = 'opened';
     record('open', 'Основной въезд · Из приложения');
     gateView();
@@ -161,8 +160,6 @@ $('open').onclick = () => {
   gateView();
   frame = requestAnimationFrame(animateGate);
 };
-window.addEventListener('offline', endCycle);
-window.addEventListener('online', gateView);
 window.addEventListener('storage',e=>{if(e.key===key){state=read();render();gateView()}});
 setInterval(render,1000*15);document.addEventListener('visibilitychange',()=>{if(!document.hidden){state=read();render();gateView()}});
 go();
